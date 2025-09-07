@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs & temp files
+*.log
+*.tmp
+*.out
+*.DS_Store
+Thumbs.db
+
+# Data (optional: keep raw data local)
+data/*.csv
+data/*.xlsx
+data/*.tsv
+!data/README.md   # keep a placeholder file
+
+# Outputs (only keep final deliverables in Git)
+output/*.csv
+!output/inventory_dataset.csv
+!output/top3.csv
