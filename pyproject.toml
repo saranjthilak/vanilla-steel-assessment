@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "vanilla-steel-assessment"
+version = "0.1.0"
+description = "Vanilla Steel Junior Data Scientist Assessment"
+authors = ["saranjthilak@gmail.com"]
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+pandas = "^2.1.0"
+numpy = "^1.26.0"
+openpyxl = "^3.1.0"
+
+
+
+[tool.poetry.scripts]
+run = "run:main"
