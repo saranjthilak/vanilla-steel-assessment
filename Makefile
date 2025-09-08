@@ -1,46 +1,52 @@
-# Makefile for Vanilla Steel Assessment
+# -----------------------------
+# Vanilla Steel Assessment Makefile
+# -----------------------------
 
-# Default target
-.PHONY: all
-all: help
+# Python environment (Poetry)
+PYTHON := poetry run python
 
-# Activate poetry shell
-.PHONY: shell
-shell:
-	poetry shell
-
-# Install dependencies
-.PHONY: install
-install:
-	poetry install
-
-# Run Scenario A (Supplier Data Cleaning)
-.PHONY: scenario-a
+# -----------------------------
+# Scenario A: Supplier cleaning
+# -----------------------------
 scenario-a:
-	poetry run python run.py --run A
+	@echo "Running Scenario A: Supplier Data Cleaning..."
+	$(PYTHON) run.py --run A
+	@echo "[✓] Scenario A complete."
 
-# Run Scenario B (RFQ Similarity)
-.PHONY: scenario-b
+# -----------------------------
+# Scenario B: RFQ Similarity
+# -----------------------------
 scenario-b:
-	poetry run python run.py --run B
+	@echo "Running Scenario B: RFQ Similarity..."
+	$(PYTHON) run.py --run B
+	@echo "[✓] Scenario B complete."
 
-# Run both scenarios
-.PHONY: run-all
-run-all:
-	poetry run python run.py --run A,B
+# -----------------------------
+# Ablation Analysis
+# -----------------------------
+ablation-analysis:
+	@echo "Running Ablation Analysis..."
+	$(PYTHON) run.py --run AB
+	@echo "[✓] Ablation Analysis complete."
 
+# -----------------------------
+# Compare Ablation Results
+# -----------------------------
+compare-ablation:
+	@echo "Comparing Ablation Scenarios..."
+	$(PYTHON) src/compare_ablation.py
+	@echo "[✓] Comparison complete."
+
+# -----------------------------
 # Clean outputs
-.PHONY: clean
+# -----------------------------
 clean:
+	@echo "Cleaning output files..."
 	rm -rf outputs/*.csv
+	@echo "[✓] Clean complete."
 
-# Show help
-.PHONY: help
-help:
-	@echo "Makefile targets:"
-	@echo "  install     - Install dependencies with Poetry"
-	@echo "  shell       - Open a Poetry shell"
-	@echo "  scenario-a  - Run Scenario A (Data Cleaning)"
-	@echo "  scenario-b  - Run Scenario B (RFQ Similarity)"
-	@echo "  run-all     - Run both scenarios"
-	@echo "  clean       - Delete generated CSV outputs"
+# -----------------------------
+# Run all
+# -----------------------------
+all: scenario-a scenario-b ablation-analysis compare-ablation
+	@echo "[✓] All steps complete."
