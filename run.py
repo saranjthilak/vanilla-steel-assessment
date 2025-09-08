@@ -2,7 +2,8 @@
 import argparse
 from src import data_cleaning
 from src import rfq_similarity
-from src import ablation_analysis  # <- import ablation-enabled compute_top3
+from src import ablation_analysis
+from src import alternative_metrics   # <- new import
 
 def run_scenario_a():
     print("Running Scenario A: Supplier Data Cleaning...")
@@ -10,7 +11,7 @@ def run_scenario_a():
     print("✅ Scenario A complete: outputs/inventory_dataset.csv generated.")
 
 def run_scenario_b():
-    print("Running Scenario B: RFQ Similarity...")
+    print("Running Scenario B: RFQ Similarity (baseline)...")
     rfq_similarity.compute_top3(
         rfq_file="data/rfq.csv",
         reference_file="data/reference_properties.tsv",
@@ -31,13 +32,18 @@ def run_ablation():
     )
     print("✅ Ablation Analysis complete.")
 
+def run_alternative():
+    print("Running Scenario C: Alternative Metrics (cosine vs hybrid)...")
+    alternative_metrics.main()
+    print("✅ Scenario C complete: outputs/top3_baseline.csv & outputs/top3_hybrid.csv generated.")
+
 def main():
     parser = argparse.ArgumentParser(description="Vanilla Steel Assessment Runner")
     parser.add_argument(
         "--run",
         type=str,
         required=True,
-        help="Comma-separated scenarios to run: A,B,AB"
+        help="Comma-separated scenarios to run: A,B,AB,C"
     )
     args = parser.parse_args()
     scenarios = [s.strip().upper() for s in args.run.split(",")]
@@ -48,6 +54,8 @@ def main():
         run_scenario_b()
     if "AB" in scenarios:
         run_ablation()
+    if "C" in scenarios:
+        run_alternative()
 
 if __name__ == "__main__":
     main()

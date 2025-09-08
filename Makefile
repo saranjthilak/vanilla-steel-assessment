@@ -38,6 +38,14 @@ compare-ablation:
 	@echo "[✓] Comparison complete."
 
 # -----------------------------
+# Alternative Metrics
+# -----------------------------
+alternative-metrics:
+	@echo "Running Alternative Metrics (cosine vs hybrid)..."
+	$(PYTHON) run.py --run C
+	@echo "[✓] Alternative Metrics complete."
+
+# -----------------------------
 # Clean outputs
 # -----------------------------
 clean:
@@ -48,5 +56,5 @@ clean:
 # -----------------------------
 # Run all
 # -----------------------------
-all: scenario-a scenario-b ablation-analysis compare-ablation
+all: scenario-a scenario-b ablation-analysis compare-ablation alternative-metrics
 	@echo "[✓] All steps complete."
