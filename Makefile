@@ -30,20 +30,20 @@ ablation-analysis:
 	@echo "[✓] Ablation Analysis complete."
 
 # -----------------------------
-# Compare Ablation Results
-# -----------------------------
-compare-ablation:
-	@echo "Comparing Ablation Scenarios..."
-	$(PYTHON) src/compare_ablation.py
-	@echo "[✓] Comparison complete."
-
-# -----------------------------
 # Alternative Metrics
 # -----------------------------
 alternative-metrics:
 	@echo "Running Alternative Metrics (cosine vs hybrid)..."
 	$(PYTHON) run.py --run C
 	@echo "[✓] Alternative Metrics complete."
+
+# -----------------------------
+# Clustering
+# -----------------------------
+clustering:
+	@echo "Running Clustering Analysis..."
+	$(PYTHON) run.py --run CL
+	@echo "[✓] Clustering complete."
 
 # -----------------------------
 # Clean outputs
@@ -56,5 +56,5 @@ clean:
 # -----------------------------
 # Run all
 # -----------------------------
-all: scenario-a scenario-b ablation-analysis compare-ablation alternative-metrics
+all: scenario-a scenario-b ablation-analysis alternative-metrics clustering
 	@echo "[✓] All steps complete."

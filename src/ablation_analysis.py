@@ -4,6 +4,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 
+# -------------------------
+# Helper functions
+# -------------------------
 def normalize_grade_keys(grade_str):
     if pd.isna(grade_str) or grade_str == '':
         return None
@@ -108,30 +111,21 @@ def vectorized_similarity(feature_df, top_n=3, weights=None, use_features=None):
             })
     return pd.DataFrame(results)
 
-def compute_top3(rfq_file, reference_file, inventory_file, output_file='top3.csv', output_dir='outputs', ablation=False):
-    print("Loading RFQ and reference data...")
+# -------------------------
+# Main compute + average similarity
+# -------------------------
+def compute_and_report(rfq_file, reference_file, inventory_file, output_dir='outputs', ablation=False):
+    print("Loading data...")
     rfqs = pd.read_csv(rfq_file)
     references = pd.read_csv(reference_file, sep='\t')
     inventory = pd.read_csv(inventory_file)
 
     rfqs['grade_normalized'] = rfqs['grade'].apply(normalize_grade_keys)
     references['grade_normalized'] = references['Grade/Material'].apply(normalize_grade_keys)
-
     merged_df = rfqs.merge(references, on='grade_normalized', how='left', suffixes=('','_ref'))
 
-    print("Engineering features...")
     feature_df = engineer_features(merged_df)
 
-    if not ablation:
-        print("Calculating top-3 similarities (baseline)...")
-        top3_df = vectorized_similarity(feature_df)
-        os.makedirs(output_dir, exist_ok=True)
-        out_path = os.path.join(output_dir, output_file)
-        top3_df.to_csv(out_path, index=False)
-        print(f"[✓] Saved {out_path}")
-        return top3_df
-
-    # Ablation scenarios
     scenarios = [
         {'name':'all_features','use_features':['dimensional','grade_properties','categorical'],'weights':{'dimensional':0.4,'grade_properties':0.3,'categorical':0.3}},
         {'name':'dimensions_only','use_features':['dimensional'],'weights':{'dimensional':1.0}},
@@ -140,11 +134,30 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file='top3.csv
         {'name':'adjusted_weights','use_features':['dimensional','grade_properties','categorical'],'weights':{'dimensional':0.5,'grade_properties':0.2,'categorical':0.3}}
     ]
 
+    os.makedirs(output_dir, exist_ok=True)
+
+    avg_scores = {}
     for scenario in scenarios:
-        print(f"Calculating top-3 similarities for scenario: {scenario['name']}...")
+        print(f"Calculating top-3 for scenario: {scenario['name']}...")
         top3_df = vectorized_similarity(feature_df, use_features=scenario['use_features'], weights=scenario['weights'])
         out_path = os.path.join(output_dir, f"top3_{scenario['name']}.csv")
         top3_df.to_csv(out_path, index=False)
-        print(f"[✓] Saved {out_path}")
+        avg_scores[scenario['name']] = top3_df['similarity_score'].mean()
 
-    return True
+    print("\nAverage similarity scores:")
+    for s, score in avg_scores.items():
+        print(f"{s}: {score:.3f}")
+
+    return avg_scores
+
+# -------------------------
+# Run script
+# -------------------------
+if __name__ == "__main__":
+    compute_and_report(
+        rfq_file="data/rfq.csv",
+        reference_file="data/reference_properties.tsv",
+        inventory_file="outputs/inventory_dataset.csv",
+        output_dir="outputs",
+        ablation=True
+    )
