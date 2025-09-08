@@ -5,7 +5,13 @@ import numpy as np
 def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv", output_dir="outputs"):
     """
     Compute top-3 most similar inventory items for each RFQ.
-    Handles lowercase column names, normalizes grades/finishes, parses ranges, and calculates similarity.
+    Tasks B.1–B.3 compliant:
+    - Normalize grades (case, aliases)
+    - Parse ranges
+    - Merge reference properties and compute midpoints
+    - Interval IoU for numeric similarity
+    - Exact match for categorical features
+    - Weighted aggregate similarity
     """
 
     # --------------------------
@@ -27,16 +33,12 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv
     rfqs["finish_norm"] = rfqs["finish"].str.upper().str.strip()
     inventory["grade_norm"] = inventory["grade"].astype(str).str.upper().str.strip()
     inventory["finish_norm"] = inventory["finish"].astype(str).str.upper().str.strip()
-    if "grade" in references.columns:
-        references["grade_norm"] = references["grade"].str.upper().str.strip()
-    else:
-        references["grade_norm"] = None
+    references["grade_norm"] = references["grade"].str.upper().str.strip() if "grade" in references.columns else None
 
     # --------------------------
-    # Handle grade aliases (optional)
+    # Handle grade aliases
     # --------------------------
     grade_aliases = {
-        # Add more aliases as needed
         "S235J0": "S235JR",
         "S235J2": "S235JR",
     }
@@ -48,8 +50,17 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv
     # --------------------------
     inventory = inventory.merge(references, on="grade_norm", how="left")
 
+    # Compute midpoints for numeric reference columns
+    for col in references.columns:
+        if "_min" in col:
+            base = col.replace("_min", "")
+            max_col = base + "_max"
+            mid_col = base + "_mid"
+            if max_col in references.columns:
+                inventory[mid_col] = inventory[[col, max_col]].mean(axis=1)
+
     # --------------------------
-    # Parse numeric ranges (min/max)
+    # Parse numeric ranges (RFQs)
     # --------------------------
     def parse_range(val):
         if pd.isna(val):
@@ -62,15 +73,16 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv
             v = float(val)
             return v, v
 
-    for dim_min, dim_max in [("thickness_min", "thickness_max"),
-                             ("width_min", "width_max"),
-                             ("weight_min", "weight_max")]:
-        if dim_min in rfqs.columns and dim_max in rfqs.columns:
-            rfqs[dim_min+"_num"], rfqs[dim_max+"_num"] = zip(*rfqs.apply(lambda x: parse_range(x[dim_min]), axis=1))
-            rfqs[dim_max+"_num"] = rfqs[dim_max+"_num"].combine_first(rfqs[dim_max])
+    range_cols = [("thickness_min", "thickness_max"),
+                  ("width_min", "width_max"),
+                  ("weight_min", "weight_max")]
+
+    for dim_min, dim_max in range_cols:
+        if dim_min in rfqs.columns:
+            rfqs[dim_min+"_num"], rfqs[dim_max+"_num"] = zip(*rfqs[dim_min].apply(parse_range))
 
     # --------------------------
-    # Define similarity functions
+    # Similarity functions
     # --------------------------
     def interval_iou(min1, max1, min2, max2):
         if pd.isna(min1) or pd.isna(max1) or pd.isna(min2) or pd.isna(max2):
@@ -95,7 +107,7 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv
 
     def categorical_score(rfq_row, inv_row):
         score = 0
-        features = ["grade_norm", "finish_norm"]
+        features = ["grade_norm", "finish_norm"]  # add more categorical features as needed
         for f in features:
             if pd.notna(rfq_row.get(f)) and pd.notna(inv_row.get(f)):
                 score += 1 if rfq_row[f] == inv_row[f] else 0
@@ -106,12 +118,14 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv
     # --------------------------
     results = []
     for idx, rfq in rfqs.iterrows():
-        inventory["num_score"] = inventory.apply(lambda x: numeric_score(rfq, x), axis=1)
-        inventory["cat_score"] = inventory.apply(lambda x: categorical_score(rfq, x), axis=1)
-        inventory["total_score"] = inventory["num_score"] * 0.6 + inventory["cat_score"] * 0.4
+        # Exclude exact matches (same article_id)
+        inventory_filtered = inventory[inventory["article_id"] != rfq.get("id", None)].copy()
 
-        # Exclude self or exact matches if article_id == rfq_id (optional)
-        top3 = inventory.nlargest(3, "total_score").copy()
+        inventory_filtered["num_score"] = inventory_filtered.apply(lambda x: numeric_score(rfq, x), axis=1)
+        inventory_filtered["cat_score"] = inventory_filtered.apply(lambda x: categorical_score(rfq, x), axis=1)
+        inventory_filtered["total_score"] = inventory_filtered["num_score"] * 0.6 + inventory_filtered["cat_score"] * 0.4
+
+        top3 = inventory_filtered.nlargest(3, "total_score")
         for _, row in top3.iterrows():
             results.append({
                 "rfq_id": rfq["id"],
@@ -120,7 +134,7 @@ def compute_top3(rfq_file, reference_file, inventory_file, output_file="top3.csv
             })
 
     # --------------------------
-    # Save top3.csv
+    # Save results
     # --------------------------
     final_df = pd.DataFrame(results)
     os.makedirs(output_dir, exist_ok=True)
