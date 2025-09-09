@@ -44,25 +44,68 @@ project-root/
 pip install -r requirements.txt
 python run.py --run A,B
 ```
-# Similarity Matching Methodology (Scenario B)
+# 🧹 Task A.1 — Supplier Data Cleaning Methodology
+
+## 1. Decimal Separators
+- **Supplier 1** sometimes used `,` instead of `.` in numeric fields (`Thickness (mm)`, `Width (mm)`).
+- Standardized all numeric values to `.` and cast them to floats.
+
+---
+
+## 2. Column Naming / Schema Alignment
+- Suppliers used different column names for the same concepts.
+- Renamed into a **common schema**:
+  thickness_mm, width_mm, gross_weight_kg, quantity,
+grade, finish, quality_choice, description,
+article_id, reserved
+
+
+- Added a `source` column to track origin (`supplier1` / `supplier2`).
+
+---
+
+## 3. Text Normalization
+- For categorical fields (`quality_choice`, `grade`, `finish`, `reserved`):
+  - Trimmed whitespace
+  - Converted all values to uppercase
+
+---
+
+## 4. Missing Values
+- **Categorical/object fields** (`article_id`, `quality_choice`, `finish`, `reserved`, `thickness_mm`, `width_mm`):  
+  Replaced missing values with the string `"NaN"`.
+- **Numeric fields** (`gross_weight_kg`, `quantity`):  
+  Kept missing values as `NaN` (float) so they remain usable in calculations.
+
+---
+
+## 5. Supplier-Specific Differences
+- **Supplier 2** lacked thickness, width, finish, and quality info → filled with `NaN`.  
+- **Supplier 1** lacked reserved/article_id → filled with `NaN`.
+
+---
+
+## 6. Output
+- Final unified dataset:  
+ Contains records from both suppliers under the standardized schema.
+
+
+
+
+
+# 📊Similarity Matching Methodology (Scenario B)
 
 ## 1. Data Normalization
 - Text features like **grade** and **finish** are uppercased and stripped of whitespace.  
 - Grade aliases (e.g., `S235J0`) are mapped to standardized formats (e.g., `S235JR`).  
 
----
-
 ## 2. Reference Join
 - Inventory records are merged with a **reference dataset** on normalized grade.  
 - This enriches the inventory with additional properties for matching.  
 
----
-
 ## 3. Numeric Range Parsing
 - RFQ specifications provided as ranges (e.g., `thickness_min`, `thickness_max`) are converted into **numeric intervals**.  
 - For singleton values, `min = max`.  
-
----
 
 ## 4. Feature Engineering & Scoring
 
@@ -75,9 +118,15 @@ python run.py --run A,B
 ### c. Aggregate Similarity Score
 - Total_score = 0.6 × numeric_score + 0.4 × categorical_score
 
----
-
 ## 5. Top-3 Selection
 - For each RFQ, the **three inventory items** with the highest similarity scores are selected.  
-- Results exclude any **exact self-matches** 
+- Results exclude any **exact self-matches**
+
+## 6. Output
+
+- outputs/top3.csv
+
+- Columns:
+  rfq_id, match_id, similarity_score
+
 
