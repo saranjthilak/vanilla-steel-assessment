@@ -39,11 +39,71 @@ project-root/
 
 ```
 
-## Running
+
+---
+
+## Installation
+
+You can install dependencies either via **Poetry** or **pip**.
+
+### Poetry (recommended)
 ```bash
-pip install -r requirements.txt
-python run.py --run A,B
+# Install poetry if not already installed
+pip install poetry
+
+# Install dependencies
+poetry install
 ```
+
+## Usage
+Using Python directly
+```
+python run.py
+```
+## Using Makefile
+```
+# Run the full pipeline
+make run
+
+# Clean outputs
+make clean
+```
+The generated outputs will be stored in the outputs/ directory.
+
+## Features
+
+Data preprocessing and cleaning for supplier inventory.
+
+Similarity-based matching of RFQ requests to inventory items.
+
+Automated pipeline via Makefile.
+
+Easy reproducibility with Poetry / pip dependency management.
+
+## Dependencies
+
+Core dependencies (from requirements.txt / pyproject.toml) include:
+
+Python 3.9+
+
+pandas — data manipulation
+
+numpy — numerical operations
+
+scikit-learn — similarity and ML utilities
+
+tqdm — progress tracking
+
+(Exact versions are pinned in pyproject.toml.)
+
+## Configuration
+
+Input data files should be placed inside the data/ directory.
+
+Outputs will automatically be written to the outputs/ directory.
+
+You can customize the workflow by editing parameters inside scripts under src/.
+
 # 🧹 Task A.1 — Supplier Data Cleaning Methodology
 
 ## 1. Decimal Separators
