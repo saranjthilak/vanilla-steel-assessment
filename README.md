@@ -15,6 +15,11 @@ This project addresses two main scenarios:
 - **Scenario B: RFQ Similarity Matching**  
   Identify the top-3 most similar inventory items for each RFQ request. This partially completed output is:
   - `outputs/top3.csv`
+  - rfq_id — identifier of the RFQ
+
+  - match_id — identifier of the matching inventory article
+
+  - similarity_score — computed similarity value (higher is better)
 
 ---
 
