@@ -43,3 +43,41 @@ project-root/
 ```bash
 pip install -r requirements.txt
 python run.py --run A,B
+```
+# Similarity Matching Methodology (Scenario B)
+
+## 1. Data Normalization
+- Text features like **grade** and **finish** are uppercased and stripped of whitespace.  
+- Grade aliases (e.g., `S235J0`) are mapped to standardized formats (e.g., `S235JR`).  
+
+---
+
+## 2. Reference Join
+- Inventory records are merged with a **reference dataset** on normalized grade.  
+- This enriches the inventory with additional properties for matching.  
+
+---
+
+## 3. Numeric Range Parsing
+- RFQ specifications provided as ranges (e.g., `thickness_min`, `thickness_max`) are converted into **numeric intervals**.  
+- For singleton values, `min = max`.  
+
+---
+
+## 4. Feature Engineering & Scoring
+
+### a. Numeric Similarity
+- Uses **Intersection over Union (IoU)** between RFQ intervals and inventory measurements.  
+
+### b. Categorical Similarity
+- Exact matches for features like **grade** and **finish** (`1` for match, `0` otherwise).  
+
+### c. Aggregate Similarity Score
+- Total_score = 0.6 × numeric_score + 0.4 × categorical_score
+
+---
+
+## 5. Top-3 Selection
+- For each RFQ, the **three inventory items** with the highest similarity scores are selected.  
+- Results exclude any **exact self-matches** 
+
