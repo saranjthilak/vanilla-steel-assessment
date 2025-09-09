@@ -226,3 +226,11 @@ rfq_id, match_id, similarity_score
   - Potential optimization opportunities for procurement strategy
 
 - Short interpretation: Clusters reveal natural groupings of RFQs (e.g., common grades with similar dimension ranges), which can guide supplier negotiation and inventory planning.
+
+## 🔮 Future Work
+
+- **Feature Enrichment**: Add more material, supplier, and market data to improve similarity accuracy.
+- **Advanced Metrics**: Explore weighted, domain-specific similarity approaches.
+- **Clustering Improvements**: Use dynamic cluster selection and generate business-friendly cluster summaries.
+- **Scalability**: Integrate vector search like FAISS and optimize with DBs for larger datasets.
+- **User Interface**: Build a Streamlit dashboard or API for real-time RFQ similarity lookup.
