@@ -12,7 +12,7 @@ def normalize_grade_keys(grade_str):
     if pd.isna(grade_str) or grade_str == '':
         return None
     grade = str(grade_str).upper().strip()
-    grade = grade.replace('STEEL', '').replace('GRADE','').replace(' ','').replace('_','').replace('-','')
+    grade = grade.replace('STEEL', '').replace('GRADE', '').replace(' ', '').replace('_', '').replace('-', '')
     return grade
 
 def parse_range_value(value_str):
@@ -20,16 +20,16 @@ def parse_range_value(value_str):
         return None, None, None
     value_str = str(value_str).strip()
     if '–' in value_str or '-' in value_str:
-        parts = value_str.replace('–','-').split('-')
+        parts = value_str.replace('–', '-').split('-')
         if len(parts) == 2:
             try:
-                min_val = float(''.join(c for c in parts[0] if c.isdigit() or c=='.'))
-                max_val = float(''.join(c for c in parts[1] if c.isdigit() or c=='.'))
-                return min_val, max_val, (min_val+max_val)/2
+                min_val = float(''.join(c for c in parts[0] if c.isdigit() or c == '.'))
+                max_val = float(''.join(c for c in parts[1] if c.isdigit() or c == '.'))
+                return min_val, max_val, (min_val + max_val) / 2
             except:
                 pass
     try:
-        val = float(''.join(c for c in value_str if c.isdigit() or c=='.'))
+        val = float(''.join(c for c in value_str if c.isdigit() or c == '.'))
         return val, val, val
     except:
         return None, None, None
@@ -38,15 +38,15 @@ def engineer_features(df):
     feature_df = df.copy()
 
     # Parse dimensions
-    dim_cols = ['thickness_min','thickness_max','width_min','width_max','weight_min','weight_max']
+    dim_cols = ['thickness_min', 'thickness_max', 'width_min', 'width_max', 'weight_min', 'weight_max']
     for col in dim_cols:
         if col in feature_df.columns:
             feature_df[col] = pd.to_numeric(feature_df[col], errors='coerce')
 
     # Fill missing min/max if only one exists
-    for min_col, max_col in [('thickness_min','thickness_max'),
-                             ('width_min','width_max'),
-                             ('weight_min','weight_max')]:
+    for min_col, max_col in [('thickness_min', 'thickness_max'),
+                             ('width_min', 'width_max'),
+                             ('weight_min', 'weight_max')]:
         if min_col in feature_df.columns and max_col in feature_df.columns:
             mask = feature_df[max_col].isna() & feature_df[min_col].notna()
             feature_df.loc[mask, max_col] = feature_df.loc[mask, min_col]
@@ -54,8 +54,8 @@ def engineer_features(df):
             feature_df.loc[mask, min_col] = feature_df.loc[mask, max_col]
 
     # Parse grade properties
-    grade_cols = ['Carbon (C)','Manganese (Mn)','Silicon (Si)',
-                  'Tensile strength (Rm)','Yield strength (Re or Rp0.2)']
+    grade_cols = ['Carbon (C)', 'Manganese (Mn)', 'Silicon (Si)',
+                  'Tensile strength (Rm)', 'Yield strength (Re or Rp0.2)']
     for col in grade_cols:
         if col in feature_df.columns:
             parsed = feature_df[col].apply(parse_range_value)
@@ -64,7 +64,7 @@ def engineer_features(df):
             feature_df[f'{col}_mid'] = [x[2] for x in parsed]
 
     # Normalize categorical
-    cat_cols = ['coating','finish','form','surface_type']
+    cat_cols = ['coating', 'finish', 'form', 'surface_type']
     for col in cat_cols:
         if col in feature_df.columns:
             feature_df[col] = feature_df[col].fillna('unknown').str.lower()
@@ -94,7 +94,7 @@ def cosine_numeric_similarity(df, cols):
 
 def hybrid_similarity(feature_df, top_n=3, weights=None):
     if weights is None:
-        weights = {'dimensional':0.4,'grade':0.3,'categorical':0.3}
+        weights = {'dimensional': 0.4, 'grade': 0.3, 'categorical': 0.3}
 
     n = len(feature_df)
     results = []
@@ -119,17 +119,15 @@ def hybrid_similarity(feature_df, top_n=3, weights=None):
             # Grade cosine (from precomputed)
             grade_cos = grade_sim[i, j]
 
-            # Categorical Jaccard
-            cat_cols = ['coating','finish','form','surface_type']
-            jaccards = []
-            for c in cat_cols:
-                jaccards.append(1.0 if rfq[c] == item[c] else 0.0)
+            # Categorical Jaccard (binary same/different)
+            cat_cols = ['coating', 'finish', 'form', 'surface_type']
+            jaccards = [1.0 if rfq[c] == item[c] else 0.0 for c in cat_cols]
             cat_jacc = np.mean(jaccards)
 
             # Weighted hybrid
-            score = (weights['dimensional']*dim_iou +
-                     weights['grade']*grade_cos +
-                     weights['categorical']*cat_jacc)
+            score = (weights['dimensional'] * dim_iou +
+                     weights['grade'] * grade_cos +
+                     weights['categorical'] * cat_jacc)
 
             sims.append((item['id'], score))
 
@@ -140,14 +138,9 @@ def hybrid_similarity(feature_df, top_n=3, weights=None):
     return pd.DataFrame(results)
 
 # -------------------------------
-# Run comparison
+# Main Scenario C Function
 # -------------------------------
-def main():
-    rfq_file = "data/rfq.csv"
-    reference_file = "data/reference_properties.tsv"
-    inventory_file = "outputs/inventory_dataset.csv"
-    output_dir = "outputs"
-
+def compute_alternative_metrics(rfq_file, reference_file, inventory_file, output_dir="outputs"):
     print("Loading data...")
     rfqs = pd.read_csv(rfq_file)
     references = pd.read_csv(reference_file, sep='\t')
@@ -156,8 +149,7 @@ def main():
     rfqs['grade_normalized'] = rfqs['grade'].apply(normalize_grade_keys)
     references['grade_normalized'] = references['Grade/Material'].apply(normalize_grade_keys)
 
-    merged_df = rfqs.merge(references, on='grade_normalized', how='left', suffixes=('','_ref'))
-
+    merged_df = rfqs.merge(references, on='grade_normalized', how='left', suffixes=('', '_ref'))
     feature_df = engineer_features(merged_df)
 
     # Baseline cosine similarity
@@ -175,6 +167,19 @@ def main():
     print("\nAverage similarity scores:")
     print(f"Baseline (cosine only): {baseline_df['similarity_score'].mean():.3f}")
     print(f"Hybrid (cosine+jaccard+IoU): {hybrid_df['similarity_score'].mean():.3f}")
+
+    return baseline_df, hybrid_df
+
+# -------------------------------
+# Script entry point
+# -------------------------------
+def main():
+    compute_alternative_metrics(
+        rfq_file="data/rfq.csv",
+        reference_file="data/reference_properties.tsv",
+        inventory_file="outputs/inventory_dataset.csv",
+        output_dir="outputs"
+    )
 
 if __name__ == "__main__":
     main()
