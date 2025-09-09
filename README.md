@@ -2,16 +2,37 @@
 
 This repository contains my solution for the **Vanilla Steel Junior Data Scientist Assessment**.
 
-## Deliverables
-- **Scenario A**: Supplier Data Cleaning → `outputs/inventory_dataset.csv`
-- **Scenario B**: RFQ Similarity → `outputs/top3.csv` (WIP)
+---
 
-## Project Structure
-- `data/` — input Excel/CSV/TSV files
-- `outputs/` — generated cleaned inventory and similarity results
-- `src/` — scripts for cleaning and similarity
-- `run.py` — main runner script
-- `requirements.txt` — dependencies
+##  Project Overview
+
+This project addresses two main scenarios:
+
+- **Scenario A: Supplier Data Cleaning**  
+  Process and clean supplier inventory data; the output is:
+  - `outputs/inventory_dataset.csv`
+
+- **Scenario B: RFQ Similarity Matching**  
+  Identify the top-3 most similar inventory items for each RFQ request. This partially completed output is:
+  - `outputs/top3.csv`
+
+---
+
+##  Repository Structure
+
+```
+project-root/
+├── data/ # Input data files 
+├── outputs/ # Generated outputs (cleaned data and results)
+│ ├── inventory_dataset.csv
+│ └── top3.csv
+├── src/ # Python scripts for data cleaning and similarity logic
+├── run.py # Main runner
+├── Makefile # Build automation
+├── pyproject.toml # Poetry
+└── README.md # Project overview and instructions
+
+```
 
 ## Running
 ```bash
