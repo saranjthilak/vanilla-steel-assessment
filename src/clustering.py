@@ -19,14 +19,16 @@ def cluster_rfqs(rfq_file, reference_file, output_dir="outputs", n_clusters=4):
     print("Engineering features...")
     feature_df = engineer_features(merged_df)
 
-    # Select numeric + categorical
+    # Select numeric + dimensional + categorical columns
     num_cols = [c for c in feature_df.columns if c.endswith("_min") or c.endswith("_max") or c.endswith("_mid")]
     dim_cols = ["thickness_min", "thickness_max", "width_min", "width_max", "weight_min", "weight_max"]
     cat_cols = ["coating", "finish", "form", "surface_type"]
 
-    # Encode features
+    # Encode numeric features
     num_matrix = feature_df[num_cols + dim_cols].fillna(0).values
     num_matrix = MinMaxScaler().fit_transform(num_matrix)
+
+    # Encode categorical features
     cat_matrix = pd.get_dummies(feature_df[cat_cols].fillna("unknown")).values
 
     # Combine numeric + categorical
@@ -56,8 +58,13 @@ def cluster_rfqs(rfq_file, reference_file, output_dir="outputs", n_clusters=4):
     print(cluster_counts, "\n")
 
     # 2. Average numeric features per cluster
-    cluster_avg = feature_df.groupby('cluster')[num_cols + dim_cols].mean()
+    cluster_avg = feature_df.groupby('cluster')[num_cols + dim_cols].mean().round(2)
     print("Average numeric features per cluster:")
     print(cluster_avg, "\n")
+
+    # 3. Most common categorical features per cluster
+    cluster_cat_summary = feature_df.groupby('cluster')[cat_cols].agg(lambda x: x.mode()[0])
+    print("Most common categorical features per cluster:")
+    print(cluster_cat_summary, "\n")
 
     return feature_df

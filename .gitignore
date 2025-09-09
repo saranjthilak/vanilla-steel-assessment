@@ -37,7 +37,11 @@ Thumbs.db
 data/*.csv
 data/*.xlsx
 data/*.tsv
-!data/README.md   # keep a placeholder file
+!data/README.md
+!data/supplier_data1.xlsx
+!data/supplier_data2.xlsx
+!data/rfq.csv
+!data/reference_properties.tsv
 
 # Outputs (only keep final deliverables in Git)
 output/*.csv
