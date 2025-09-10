@@ -1,4 +1,4 @@
-# VANILLA-STEEL-ASSESSMENT
+# VANILLA-STEEL-CASE-ASSESSMENT
 
 **Transform Case Data into Strategic Procurement Power**
 
@@ -12,7 +12,14 @@ Built with: ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
 - [Overview](#overview)
 - [Getting Started](#getting-started)
 - [Installation](#installation)
+- [Repository Structure](#repository-structure)
 - [Usage](#usage)
+- [Features](#features)
+- [Configuration](#configuration)
+- [🧹 Task A — Supplier Data Cleaning Methodology](#-task-a--supplier-data-cleaning-methodology)
+- [📊 Task B — RFQ Similarity Matching Methodology](#-task-b--rfq-similarity-matching-methodology)
+- [🎯 Bonus / Stretch Goals Methodology](#-bonus--stretch-goals-methodology)
+- [🔮 Future Work](#-future-work)
 
 ---
 
@@ -26,7 +33,7 @@ This project helps streamline workflows, save effort, and improve matching accur
 - **Data Cleaning & Normalization:** Standardize supplier datasets for consistent analysis.
 - **RFQ Similarity Assessment:** Find the top-3 matches for RFQs to facilitate efficient sourcing.
 - **Workflow Orchestration:** Automates preprocessing tasks with reproducible steps.
-- **Clustering & Segmentation:** Groups SKUs for improved insights.
+- **Clustering & Segmentation:** Groups RFQs for improved insights.
 - **Metrics & Model Analysis:** Supports evaluation of feature importance and alternative similarity measures.
 
 ---
@@ -106,7 +113,7 @@ You can customize the workflow by editing parameters inside scripts under src/.
 # 🧹 Task A — Supplier Data Cleaning Methodology
 
 ## 1. Decimal Separators
-- **Supplier 1** occasionally used `,` instead of `.` in numeric fields (`Thickness (mm)`, `Width (mm)`).
+- **Suppliers** occasionally use `,` instead of `.` in numeric fields (`Thickness (mm)`, `Width (mm)`).
 - Standardized all numeric values to `.` and cast them to floats.
 
 ---
