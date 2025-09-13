@@ -5,7 +5,6 @@ import numpy as np
 def run_supplier_cleaning(input_dir="data", output_dir="outputs"):
     """
     Clean and join supplier datasets into inventory_dataset.csv
-    including mechanical/chemical properties from Supplier 1 (RP02, RM, AG, AI).
     """
 
     # Load supplier files

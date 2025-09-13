@@ -4,7 +4,7 @@ from src import data_cleaning
 from src import rfq_similarity
 from src import ablation_analysis
 from src import alternative_metrics
-from src import clustering  # <- new clustering module
+from src import clustering
 
 def run_scenario_a():
     print("Running Scenario A: Supplier Data Cleaning...")
@@ -16,7 +16,6 @@ def run_scenario_b():
     rfq_similarity.compute_top3(
         rfq_file="data/rfq.csv",
         reference_file="data/reference_properties.tsv",
-        inventory_file="outputs/inventory_dataset.csv",
         output_file="top3.csv",
         output_dir="outputs"
     )
