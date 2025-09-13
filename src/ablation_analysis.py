@@ -94,7 +94,7 @@ def vectorized_similarity(feature_df, top_n=3, weights=None, use_features=None):
 
     # Categorical similarity
     if 'categorical' in use_features:
-        cat_cols = ['coating','finish','form','surface_type']
+        cat_cols = ['coating','finish','form','surface_type','surface_protection']
         cat_matrix = pd.get_dummies(df[cat_cols], dummy_na=True)
         sim_matrices['categorical'] = cosine_similarity(cat_matrix)
     else:
