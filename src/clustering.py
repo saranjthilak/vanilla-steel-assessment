@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
-from src.ablation_analysis import engineer_features, normalize_grade_keys
+from src.rfq_similarity import engineer_features, normalize_grade_keys
 
 def cluster_rfqs(rfq_file, reference_file, output_dir="outputs", n_clusters=4):
     print("Loading RFQ and reference data...")

@@ -39,7 +39,6 @@ def run_alternative_metrics():
     alternative_metrics.compute_alternative_metrics(
         rfq_file="data/rfq.csv",
         reference_file="data/reference_properties.tsv",
-        inventory_file="outputs/inventory_dataset.csv",
         output_dir="outputs"
     )
     print("✅ Scenario C complete: outputs/top3_baseline.csv & outputs/top3_hybrid.csv generated.")

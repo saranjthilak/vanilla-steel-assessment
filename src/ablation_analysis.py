@@ -3,74 +3,8 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
+from src.rfq_similarity import engineer_features, normalize_grade_keys
 
-# -------------------------
-# Helper functions
-# -------------------------
-
-# Handels missing data and extract only relevant parts of the grade strings
-def normalize_grade_keys(grade_str):
-    if pd.isna(grade_str) or grade_str == '':
-        return None
-    grade = str(grade_str).upper().strip()
-    grade = grade.replace(' ', '').replace('_', '').replace('-', '')
-    return grade
-# value_str can be a single value or a range (e.g., "0.20-0.25") and returns (min, max, mid)
-def parse_range_value(value_str):
-    if pd.isna(value_str) or value_str in ['', '-']:
-        return None, None, None
-
-    value_str = str(value_str).strip()
-
-    if '-' in value_str:
-        parts = value_str.split('-')
-        if len(parts) == 2:
-            try:
-                min_val = float(''.join(c for c in parts[0] if c.isdigit() or c=='.'))
-                max_val = float(''.join(c for c in parts[1] if c.isdigit() or c=='.'))
-                return min_val, max_val, (min_val + max_val) / 2
-            except:
-                pass
-
-    try:
-        val = float(''.join(c for c in value_str if c.isdigit() or c == '.'))
-        return val, val, val
-    except:
-        return None, None, None
-
-# Numeric conversion of dimensions and grades, handling missing data, categorical normalization
-def engineer_features(df):
-    feature_df = df.copy()
-    # Dimensional columns
-    dim_cols = ['thickness_min','thickness_max','width_min','width_max','weight_min','weight_max']
-    for col in dim_cols:
-        if col in feature_df.columns:
-            feature_df[col] = pd.to_numeric(feature_df[col], errors='coerce')
-
-    # Singletons(if only min or max is given, fill the other)
-    for min_col, max_col in [('thickness_min','thickness_max'),('width_min','width_max'),('weight_min','weight_max')]:
-        if min_col in feature_df.columns and max_col in feature_df.columns:
-            mask = feature_df[max_col].isna() & feature_df[min_col].notna()
-            feature_df.loc[mask, max_col] = feature_df.loc[mask, min_col]
-            mask = feature_df[min_col].isna() & feature_df[max_col].notna()
-            feature_df.loc[mask, min_col] = feature_df.loc[mask, max_col]
-
-    # Grade properties
-    grade_cols = ['Carbon (C)','Manganese (Mn)','Silicon (Si)','Tensile strength (Rm)','Yield strength (Re or Rp0.2)']
-    for col in grade_cols:
-        if col in feature_df.columns:
-            parsed = feature_df[col].apply(parse_range_value)
-            feature_df[f'{col}_min'] = [x[0] for x in parsed]
-            feature_df[f'{col}_max'] = [x[1] for x in parsed]
-            feature_df[f'{col}_mid'] = [x[2] for x in parsed]
-
-    # Categorical columns
-    cat_cols = ['coating','finish','form','surface_type','surface_protection']
-    for col in cat_cols:
-        if col in feature_df.columns:
-            feature_df[col] = feature_df[col].fillna('unknown').str.lower()
-
-    return feature_df
 # computig weighted cosine similarity for different feature sets
 def vectorized_similarity(feature_df, top_n=3, weights=None, use_features=None):
     if weights is None:
