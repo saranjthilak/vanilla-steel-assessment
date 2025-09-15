@@ -157,7 +157,7 @@ You can customize the workflow by editing parameters inside scripts under src/.
 # 📊 Task B — RFQ Similarity Matching Methodology
 
 ## 1. Data Normalization
-- Text features (`grade`, `finish`) standardized to uppercase, trimmed, and mapped to canonical aliases (e.g., `S235J0 → S235JR`).
+- Text features (`grade`, `finish`) standardized to uppercase, trimmed
 
 ---
 
